@@ -1,4 +1,4 @@
 acoustigo
 =========
 
-a Go (Golang) AcoustigBrainz client library
+a Go (Golang) AcousticBrainz client library
