@@ -39,15 +39,14 @@ type HighLevelEntity struct {
 }
 
 type ABClient struct {
-	BaseURL url.URL
+	BaseURL *url.URL
 }
 
-func (a *ABClient) HighLevelFromGMBRecording(r *gomusicbrainz.Recording) (*HighLevel, error) {
+func (a *ABClient) HighLevelFromGMBRecording(r *gomusicbrainz.Recording) (*HLResponse, error) {
 	return nil, nil
 }
 
-func NewABClient(apiUrl string) *ABClient {
-
+func NewABClient(apiUrl string) (*ABClient, error) {
 	c := ABClient{}
 	var err error
 
