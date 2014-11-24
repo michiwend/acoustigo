@@ -1,18 +1,21 @@
 package acoustigo
 
 import (
-	"github.com/michiwend/gomusicbrainz"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
 	"net/url"
+	"path"
 )
 
-type GenreTzanetakis struct {
-	Value       string
-	Probability float64
+type LLResponse struct {
 }
 
 type HLResponse struct {
 	MetaData
-	HighLevel []HighLevelEntity
+	HighLevel map[string]HighLevelEntity
 }
 
 type MetaData struct {
@@ -42,7 +45,49 @@ type ABClient struct {
 	BaseURL *url.URL
 }
 
-func (a *ABClient) HighLevelFromGMBRecording(r *gomusicbrainz.Recording) (*HLResponse, error) {
+func (a *ABClient) getRequest(result interface{}, MBID, endpoint string) error {
+
+	client := &http.Client{}
+
+	reqUrl := a.BaseURL
+	reqUrl.Path = path.Join(reqUrl.Path, MBID, endpoint)
+	//reqUrl.RawQuery = params.Encode()
+
+	fmt.Println(reqUrl.String())
+
+	req, err := http.NewRequest("GET", reqUrl.String(), nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	//req.Header.Set("User-Agent", a.userAgentHeader)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("Bad response: " + resp.Status)
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+
+	if err = decoder.Decode(result); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *ABClient) HighLevel(recordingID string) (*HLResponse, error) {
+	result := HLResponse{}
+	err := a.getRequest(&result, recordingID, "high-level")
+
+	return &result, err
+}
+
+func (a *ABClient) LowLevel(recordingID string) (*LLResponse, error) {
 	return nil, nil
 }
 
